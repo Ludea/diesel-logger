@@ -205,6 +205,24 @@ where
     }
 }
 
+impl<C> MultiConnectionHelper for LoggingConnection<C>
+where
+    C: MultiConnectionHelper<Backend = Self::Backend>,
+    Self: Connection,
+{
+    fn to_any<'a>(
+        lookup: &mut <Self::Backend as diesel::sql_types::TypeMetadata>::MetadataLookup,
+    ) -> &mut (dyn std::any::Any + 'a) {
+        C::to_any(lookup)
+    }
+
+    fn from_any(
+        lookup: &mut dyn std::any::Any,
+    ) -> Option<&mut <Self::Backend as diesel::sql_types::TypeMetadata>::MetadataLookup> {
+        C::from_any(lookup)
+    }
+}
+
 fn log_query(query: &dyn Display, duration: Duration) {
     if duration.as_secs() >= 5 {
         warn!(
